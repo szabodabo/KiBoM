@@ -28,6 +28,17 @@ def link(text):
 
     return text
 
+
+# If a path is supplied (/some/path/cool_project.txt), try to extract
+# just the file name without the extension ("cool_project").
+def maybeExtractPrettyName(maybe_file_path):
+    if os.path.isfile(maybe_file_path):
+        filename = os.path.basename(maybe_file_path)
+        filename_parts = filename.split('.')
+        if filename_parts:
+            return filename_parts[0]
+    return None
+
 """
 Write BoM out to a HTML file
 filename = path to output file (must be a .htm or .html file)
@@ -57,10 +68,13 @@ def WriteHTML(filename, groups, net, headings, prefs):
         html.write("</head>\n")
         html.write("<body>\n")
 
+        # Try using the netlist file to extract a "pretty" project name.
+        pretty_name = maybeExtractPrettyName(net.getSource())
 
         #PCB info
         if not prefs.hideHeaders:
-            html.write("<h2>KiBoM PCB Bill of Materials</h2>\n")
+            title_suffix = (': ' + pretty_name) if pretty_name else ''
+            html.write("<h2>KiBoM PCB Bill of Materials{title_suffix}</h2>\n".format(title_suffix=title_suffix))
         if not prefs.hidePcbInfo:
             html.write('<table border="1">\n')
             html.write("<tr><td>Source File</td><td>{source}</td></tr>\n".format(source=net.getSource()))
